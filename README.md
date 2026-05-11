@@ -4,9 +4,7 @@
 
 ## Опубликованный проект
 
-🔗 [Открыть на GitHub Pages](https://USERNAME.github.io/REPO_NAME/)
-
-> Не забудьте подставить свой логин и название репозитория.
+🔗 [Открыть на GitHub Pages](https://ily149.github.io/mesto-ad/)
 
 ## Технологии
 

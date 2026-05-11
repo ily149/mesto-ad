@@ -12,6 +12,7 @@ import {
   setUserAvatar,
   addNewCard,
   deleteCardFromServer,
+  changeLikeCardStatus,
 } from "./components/api.js";
 
 // Настройки валидации
@@ -94,26 +95,38 @@ const createUserPreview = (userName) => {
 };
 
 // Открытие модалки с информацией о карточке
-const handleInfoClick = (cardId) => {
-  getCardList()
-    .then((cards) => {
-      const cardData = cards.find((card) => card._id === cardId);
-      if (!cardData) return;
+const handleInfoClick = (cardData) => {
+  if (!cardData) return;
 
-      infoList.replaceChildren(
-        createInfoDefinition("Описание:", cardData.name),
-        createInfoDefinition(
-          "Дата создания:",
-          formatDate(new Date(cardData.createdAt))
-        ),
-        createInfoDefinition("Владелец:", cardData.owner.name)
+  infoList.replaceChildren(
+    createInfoDefinition("Описание:", cardData.name),
+    createInfoDefinition(
+      "Дата создания:",
+      formatDate(new Date(cardData.createdAt))
+    ),
+    createInfoDefinition("Владелец:", cardData.owner.name),
+    createInfoDefinition("Количество лайков:", cardData.likes.length)
+  );
+
+  infoUsersList.replaceChildren(
+    ...cardData.likes.map((user) => createUserPreview(user.name))
+  );
+
+  openModalWindow(infoModalWindow);
+};
+
+// Лайк / снятие лайка
+const handleLikeCard = (cardData, likeButton, likeCount) => {
+  const isLiked = likeButton.classList.contains("card__like-button_is-active");
+
+  changeLikeCardStatus(cardData._id, isLiked)
+    .then((updatedCard) => {
+      cardData.likes = updatedCard.likes;
+      likeButton.classList.toggle(
+        "card__like-button_is-active",
+        updatedCard.likes.some((user) => user._id === currentUserId)
       );
-
-      infoUsersList.replaceChildren(
-        ...cardData.likes.map((user) => createUserPreview(user.name))
-      );
-
-      openModalWindow(infoModalWindow);
+      likeCount.textContent = updatedCard.likes.length;
     })
     .catch((err) => {
       console.log(err);
@@ -214,6 +227,7 @@ const handleCardFormSubmit = (evt) => {
           onPreviewPicture: handlePreviewPicture,
           onDeleteCard: handleDeleteRequest,
           onInfoClick: handleInfoClick,
+          onLikeCard: handleLikeCard,
         })
       );
       closeModalWindow(cardFormModalWindow);
@@ -277,6 +291,7 @@ Promise.all([getUserInfo(), getCardList()])
           onPreviewPicture: handlePreviewPicture,
           onDeleteCard: handleDeleteRequest,
           onInfoClick: handleInfoClick,
+          onLikeCard: handleLikeCard,
         })
       );
     });
